@@ -1,3 +1,9 @@
 fastapi[all]
 pytest
 requests
+asyncio
+httpx
+astroplan
+astropy
+bs4
+astroquery
