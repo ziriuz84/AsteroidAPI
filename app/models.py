@@ -1,10 +1,12 @@
 from pydantic import BaseModel
 
+
 class ObjectTargetListPayload(BaseModel):
-    utf8: str
-    authenticity_token: str
-    latitude: str
-    longitude: str
+    utf8: str = "%E2%9C%93"
+    authenticity_token: str = "W5eBzzw9Clj4tJVzkz0z%2F2EK18jvSS%2BffHxZpAshylg%3D"
+    latitude: float
+    longitude: float
+    height: float = 0
     year: int
     month: int
     day: int
@@ -12,9 +14,8 @@ class ObjectTargetListPayload(BaseModel):
     minute: int
     duration: int = 1
     max_objects: int = 10
-    min_alt : int = 0
+    min_alt: int = 0
     solar_elong: int = 0
     lunar_elong: int = 0
-    object_type: int
+    object_type: str = "mp"
     submit: str = "Submit"
-

@@ -250,9 +250,10 @@ def is_visible(config, coord, time):
 
     """
     location = EarthLocation.from_geodetic(
-        lat=float(config["Observatory"]["latitude"]) * u.deg,
-        lon=float(config["Observatory"]["longitude"]) * u.deg,
-        height=float(config["Observatory"]["altitude"]) * u.m,
+        lat=float(config.latitude) * u.deg,
+        lon=float(config.longitude) * u.deg,
+        # height=float(config["Observatory"]["altitude"]) * u.m,
+        height=float(config.height) * u.m,
     )
     if isinstance(coord, list):
         coord = SkyCoord(
@@ -261,34 +262,35 @@ def is_visible(config, coord, time):
     coord = coord.transform_to(AltAz(obstime=time, location=location))
     # configuration.load_config(config)
     result = False
-    if (
-        coord.az > 315 * u.deg
-        and coord.az < 45 * u.deg
-        and coord.alt > float(config["Observatory"]["nord_altitude"]) * u.deg
-    ):
-        result = True
-    elif (
-        coord.az > 45 * u.deg
-        and coord.az < 135 * u.deg
-        and coord.alt > float(config["Observatory"]["east_altitude"]) * u.deg
-    ):
-        result = True
-    elif (
-        coord.az > 135 * u.deg
-        and coord.az < 225 * u.deg
-        and coord.alt > float(config["Observatory"]["south_altitude"]) * u.deg
-    ):
-        result = True
-    elif (
-        coord.az > 225 * u.deg
-        and coord.az < 315 * u.deg
-        and coord.alt > float(config["Observatory"]["west_altitude"]) * u.deg
-    ):
-        result = True
+    # if (
+    #     coord.az > 315 * u.deg
+    #     and coord.az < 45 * u.deg
+    #     and coord.alt > float(config["Observatory"]["nord_altitude"]) * u.deg
+    # ):
+    #     result = True
+    # elif (
+    #     coord.az > 45 * u.deg
+    #     and coord.az < 135 * u.deg
+    #     and coord.alt > float(config["Observatory"]["east_altitude"]) * u.deg
+    # ):
+    #     result = True
+    # elif (
+    #     coord.az > 135 * u.deg
+    #     and coord.az < 225 * u.deg
+    #     and coord.alt > float(config["Observatory"]["south_altitude"]) * u.deg
+    # ):
+    #     result = True
+    # elif (
+    #     coord.az > 225 * u.deg
+    #     and coord.az < 315 * u.deg
+    #     and coord.alt > float(config["Observatory"]["west_altitude"]) * u.deg
+    # ):
+    #     result = True
+    result = True
     return result
 
 
-def observing_target_list_scraper(url, payload):
+async def observing_target_list_scraper(url, payload):
     """
 
     Parameters
@@ -323,7 +325,7 @@ def observing_target_list_scraper(url, payload):
     return data
 
 
-def observing_target_list(config, payload):
+async def observing_target_list(payload):
     """Prints Observing target list from MPC
 
     Parameters
@@ -342,28 +344,28 @@ def observing_target_list(config, payload):
     #     names=("Designation", "Mag", "Time", "RA", "Dec", "Alt"),
     #     meta={"name": "Observing Target List"},
     # )
-    results = {"data": []}
-    data = observing_target_list_scraper(
+    results = []
+    data = await observing_target_list_scraper(
         "https://www.minorplanetcenter.net/whatsup/index", payload
     )
     counter = 0
     for d in data:
-        if counter == 0:
+        print(counter)
+        counter += 1
+        if counter == 1:
             continue
         if is_visible(
-            config, [d[5], d[6]], Time(d[4].replace("T", " ").replace("z", ""))
+            payload, [d[5], d[6]], Time(d[4].replace("T", " ").replace("z", ""))
         ):
-            results["data"].append(
-                {
-                    "designation": d[0],
-                    "magnitude": d[1],
-                    "time": d[4].replace("z", ""),
-                    "ra": skycoord_format(d[5], "ra"),
-                    "dec": skycoord_format(d[6], "dec"),
-                    "altitude": d[7],
+            asteroid={
+                "designation": d[0],
+                "magnitude": d[1],
+                # "time": d[4].replace("z", ""),
+                "ra": skycoord_format(d[5], "ra"),
+                "dec": skycoord_format(d[6], "dec"),
+                "altitude": d[7],
                 }
-            )
-        counter += 1
+            results.append(asteroid.copy())
     # for d in data:
     #     if is_visible(
     #         config, [d[5], d[6]], Time(d[4].replace("T", " ").replace("z", ""))

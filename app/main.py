@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
-from app.lib.scheduling import weather
-import models
+from app.libraries.scheduling import weather, observing_target_list
+from app.models import ObjectTargetListPayload
 
 app = FastAPI(
     title="AsteroidAPI",
@@ -14,7 +14,9 @@ def root() -> str:
     return "home"
 
 
-@app.get("/api/v1/scheduling")
-def scheduling():
-    return {"section": "scheduling", "test": "test"}
+@app.get("/api/v1/target_list")
+async def target_list(payload: ObjectTargetListPayload):
+    response = await observing_target_list(payload)
+    print(response)
+    return {"data": response}
 
