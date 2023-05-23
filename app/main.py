@@ -17,6 +17,5 @@ def root() -> str:
 @app.get("/api/v1/target_list")
 async def target_list(payload: ObjectTargetListPayload):
     response = await observing_target_list(payload)
-    print(response)
     return {"data": response}
 

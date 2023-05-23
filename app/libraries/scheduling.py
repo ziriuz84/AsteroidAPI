@@ -350,7 +350,6 @@ async def observing_target_list(payload):
     )
     counter = 0
     for d in data:
-        print(counter)
         counter += 1
         if counter == 1:
             continue
