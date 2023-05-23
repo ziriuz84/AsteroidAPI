@@ -1,4 +1,12 @@
+from enum import Enum
+
 from pydantic import BaseModel
+
+
+class ObjectType(str, Enum):
+    asteroid = "mp"
+    comet = "cmt"
+    nea = "neo"
 
 
 class ObjectTargetListPayload(BaseModel):
@@ -17,5 +25,5 @@ class ObjectTargetListPayload(BaseModel):
     min_alt: int = 0
     solar_elong: int = 0
     lunar_elong: int = 0
-    object_type: str = "mp"
+    object_type: ObjectType 
     submit: str = "Submit"
