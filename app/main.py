@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
-from app.libraries.scheduling import weather, observing_target_list
-from app.models import ObjectTargetListPayload
+from app.libraries.scheduling import weather, observing_target_list, neocp_confirmation
+from app.models import ObjectTargetListPayload, NeocpConfirmationPayload
 
 app = FastAPI(
     title="AsteroidAPI",
@@ -19,3 +19,7 @@ async def target_list(payload: ObjectTargetListPayload):
     response = await observing_target_list(payload)
     return {"data": response}
 
+@app.get("/api/v1/neocp_confirmation")
+def neocp_confirm_list(payload: NeocpConfirmationPayload):
+    response = neocp_confirmation(payload)
+    return {"data": response}

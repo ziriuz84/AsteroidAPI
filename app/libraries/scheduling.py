@@ -339,11 +339,6 @@ async def observing_target_list(payload):
     -------
 
     """
-    # results = QTable(
-    #     [[""], [""], [""], [""], [""], [""]],
-    #     names=("Designation", "Mag", "Time", "RA", "Dec", "Alt"),
-    #     meta={"name": "Observing Target List"},
-    # )
     results = []
     data = await observing_target_list_scraper(
         "https://www.minorplanetcenter.net/whatsup/index", payload
@@ -356,34 +351,19 @@ async def observing_target_list(payload):
         if is_visible(
             payload, [d[5], d[6]], Time(d[4].replace("T", " ").replace("z", ""))
         ):
-            asteroid={
+            asteroid = {
                 "designation": d[0],
                 "magnitude": d[1],
                 # "time": d[4].replace("z", ""),
                 "ra": skycoord_format(d[5], "ra"),
                 "dec": skycoord_format(d[6], "dec"),
                 "altitude": d[7],
-                }
+            }
             results.append(asteroid.copy())
-    # for d in data:
-    #     if is_visible(
-    #         config, [d[5], d[6]], Time(d[4].replace("T", " ").replace("z", ""))
-    #     ):
-    #         results.add_row(
-    #             [
-    #                 d[0],
-    #                 d[1],
-    #                 d[4].replace("z", ""),
-    #                 skycoord_format(d[5], "ra"),
-    #                 skycoord_format(d[6], "dec"),
-    #                 d[7],
-    #             ]
-    #         )
-    # results.remove_row(0)
     return results
 
 
-def neocp_confirmation(config, min_score, max_magnitude, min_altitude):
+def neocp_confirmation(payload):
     """Prints NEOcp visible at the moment
 
     Parameters
@@ -402,57 +382,37 @@ def neocp_confirmation(config, min_score, max_magnitude, min_altitude):
 
     """
     # configuration.load_config(config)
-    # r=requests.get('https://www.minorplanetcenter.net/Extended_Files/neocp.json')
-    # data=r.json()
-    response = asyncio.run(
-        httpx_get(
-            "https://www.minorplanetcenter.net/Extended_Files/neocp.json", {}, "json"
-        )
-    )
-    data = response[0]
-    lat = config["Observatory"]["latitude"]
-    long = config["Observatory"]["longitude"]
+    r=requests.get('https://www.minorplanetcenter.net/Extended_Files/neocp.json')
+    data=r.json()
+    lat = payload.latitude
+    long = payload.longitude
     location = EarthLocation.from_geodetic(lon=float(long), lat=float(lat))
     observing_date = Time(datetime.datetime.utcnow())
     altaz = AltAz(location=location, obstime=observing_date)
-    table = QTable(
-        [[""], [0], [""], [""], [0.0], [0.0], [0], [0.0], [0.0]],
-        names=(
-            "Temp_Desig",
-            "Score",
-            "R.A.",
-            "Decl",
-            "Alt",
-            "V",
-            "NObs",
-            "Arc",
-            "Not_seen",
-        ),
-        meta={"name": "NEOcp confirmation"},
-    )
+    result = []
     for item in data:
         coord = SkyCoord(float(item["R.A."]) * u.deg, float(item["Decl."]) * u.deg)
         coord_altaz = coord.transform_to(altaz)
-        if int(
-            item["Score"] > min_score
-            and is_visible(config, coord, observing_date)
-            and float(item["V"] < max_magnitude)
-        ):
-            table.add_row(
-                [
-                    item["Temp_Desig"],
-                    int(item["Score"]),
-                    coord.ra.to_string(u.hour),
-                    coord.dec.to_string(u.degree, alwayssign=True),
-                    coord_altaz.alt,
-                    float(item["V"]),
-                    int(item["NObs"]),
-                    float(item["Arc"]),
-                    float(item["Not_Seen_dys"]),
-                ]
-            )
-    table.remove_row(0)
-    return table
+        print(item)
+        # if int(
+        #     item["Score"] > payload.min_score
+        #     and is_visible(payload, coord, observing_date)
+        #     and float(item["V"] < payload.max_magnitude)
+        # ):
+        asteroid = {
+            "Temp_Desig": item["Temp_Desig"],
+            "Score": int(item["Score"]),
+            "R.A.": coord.ra.to_string(u.hour),
+            "Dec.": coord.dec.to_string(u.degree, alwayssign=True),
+            "Alt.": coord_altaz.alt.to_string(), 
+            "V": float(item["V"]),
+            "N.Obs": int(item["NObs"]),
+            "Arc": float(item["Arc"]),
+            "Not_Seen_days": float(item["Not_Seen_dys"]),
+        }
+        # print(asteroid)
+        result.append(asteroid)
+    return result
 
 
 def twilight_times(config):

@@ -8,6 +8,12 @@ class ObjectType(str, Enum):
     comet = "cmt"
     nea = "neo"
 
+class NeocpConfirmationPayload(BaseModel):
+    latitude:float
+    longitude:float
+    min_score: int=0
+    max_magnitude: int
+    height: int=0
 
 class ObjectTargetListPayload(BaseModel):
     utf8: str = "%E2%9C%93"
