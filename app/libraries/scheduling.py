@@ -414,7 +414,7 @@ def neocp_confirmation(payload):
     return result
 
 
-def twilight_times(config):
+def twilight_times(payload):
     """Returns twilight times for a given location
 
     Parameters
@@ -428,20 +428,21 @@ def twilight_times(config):
     """
     # configuration.load_config(config)
     location = EarthLocation.from_geodetic(
-        float(config["Observatory"]["longitude"]) * u.deg,
-        float(config["Observatory"]["latitude"]) * u.deg,
-        float(config["Observatory"]["altitude"]) * u.m,
+        float(payload.longitude) * u.deg,
+        float(payload.latitude) * u.deg,
+        float(payload.altitude) * u.m,
     )
-    observer = Observer(name=config["Observatory"]["obs_name"], location=location)
+    observer = Observer(name="generic", location=location)
     observing_date = Time(datetime.datetime.utcnow())
     result = {
-        "AstroM": observer.twilight_morning_astronomical(observing_date, which="next"),
-        "AstroE": observer.twilight_evening_astronomical(observing_date, which="next"),
-        "CivilM": observer.twilight_morning_civil(observing_date, which="next"),
-        "CivilE": observer.twilight_evening_civil(observing_date, which="next"),
-        "NautiM": observer.twilight_morning_nautical(observing_date, which="next"),
-        "NautiE": observer.twilight_evening_nautical(observing_date, which="next"),
+        "AstroM": observer.twilight_morning_astronomical(observing_date, which="next").to_value("iso"),
+        "AstroE": observer.twilight_evening_astronomical(observing_date, which="next").to_value("iso"),
+        "CivilM": observer.twilight_morning_civil(observing_date, which="next").to_value("iso"),
+        "CivilE": observer.twilight_evening_civil(observing_date, which="next").to_value("iso"),
+        "NautiM": observer.twilight_morning_nautical(observing_date, which="next").to_value("iso"),
+        "NautiE": observer.twilight_evening_nautical(observing_date, which="next").to_value("iso"),
     }
+    print(result)
     return result
 
 

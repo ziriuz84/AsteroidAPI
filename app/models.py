@@ -33,3 +33,8 @@ class ObjectTargetListPayload(BaseModel):
     lunar_elong: int = 0
     object_type: ObjectType 
     submit: str = "Submit"
+
+class ObserverCoordinates(BaseModel):
+  latitude: float
+  longitude: float
+  altitude: float
