@@ -37,4 +37,4 @@ class ObjectTargetListPayload(BaseModel):
 class ObserverCoordinates(BaseModel):
   latitude: float
   longitude: float
-  altitude: float
+  altitude: float = 0
