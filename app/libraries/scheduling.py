@@ -446,7 +446,7 @@ def twilight_times(payload):
     return result
 
 
-def sun_moon_ephemeris(config):
+def sun_moon_ephemeris(payload):
     """Returns the Sun and Moon ephemeris
 
     Parameters
@@ -460,17 +460,17 @@ def sun_moon_ephemeris(config):
     """
     # configuration.load_config(config)
     location = EarthLocation.from_geodetic(
-        float(config["Observatory"]["longitude"]) * u.deg,
-        float(config["Observatory"]["latitude"]) * u.deg,
-        float(config["Observatory"]["altitude"]) * u.m,
+        float(payload.longitude) * u.deg,
+        float(payload.latitude) * u.deg,
+        float(payload.altitude) * u.m,
     )
-    observer = Observer(name=config["Observatory"]["obs_name"], location=location)
+    observer = Observer(name="generic", location=location)
     observing_date = Time(datetime.datetime.utcnow())
     result = {
-        "Sunrise": observer.sun_rise_time(observing_date, which="next"),
-        "Sunset": observer.sun_set_time(observing_date, which="next"),
-        "Moonrise": observer.moon_rise_time(observing_date, which="next"),
-        "Moonset": observer.moon_set_time(observing_date, which="next"),
+        "Sunrise": observer.sun_rise_time(observing_date, which="next").to_value("iso"),
+        "Sunset": observer.sun_set_time(observing_date, which="next").to_value("iso"),
+        "Moonrise": observer.moon_rise_time(observing_date, which="next").to_value("iso"),
+        "Moonset": observer.moon_set_time(observing_date, which="next").to_value("iso"),
         "MoonIll": observer.moon_illumination(observing_date),
     }
     return result
