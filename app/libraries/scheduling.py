@@ -393,7 +393,6 @@ def neocp_confirmation(payload):
     for item in data:
         coord = SkyCoord(float(item["R.A."]) * u.deg, float(item["Decl."]) * u.deg)
         coord_altaz = coord.transform_to(altaz)
-        print(item)
         # if int(
         #     item["Score"] > payload.min_score
         #     and is_visible(payload, coord, observing_date)
@@ -404,7 +403,7 @@ def neocp_confirmation(payload):
             "Score": int(item["Score"]),
             "R.A.": coord.ra.to_string(u.hour),
             "Dec.": coord.dec.to_string(u.degree, alwayssign=True),
-            "Alt.": coord_altaz.alt.to_string(), 
+            "Alt.": coord_altaz.alt.degree, 
             "V": float(item["V"]),
             "N.Obs": int(item["NObs"]),
             "Arc": float(item["Arc"]),
