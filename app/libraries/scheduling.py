@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import gettext
-import json
 
 import httpx
 import requests
