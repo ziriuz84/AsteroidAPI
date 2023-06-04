@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import gettext
+import json
 
 import httpx
 import requests
@@ -382,10 +383,10 @@ def neocp_confirmation(payload):
 
     """
     # configuration.load_config(config)
-    r=requests.get('https://www.minorplanetcenter.net/Extended_Files/neocp.json')
-    data=r.json()
-    lat = payload.latitude
-    long = payload.longitude
+    r = requests.get("https://www.minorplanetcenter.net/Extended_Files/neocp.json")
+    data = r.json()
+    lat = payload.location.latitude
+    long = payload.location.longitude
     location = EarthLocation.from_geodetic(lon=float(long), lat=float(lat))
     observing_date = Time(datetime.datetime.utcnow())
     altaz = AltAz(location=location, obstime=observing_date)
@@ -403,7 +404,7 @@ def neocp_confirmation(payload):
             "Score": int(item["Score"]),
             "R.A.": coord.ra.to_string(u.hour),
             "Dec.": coord.dec.to_string(u.degree, alwayssign=True),
-            "Alt.": coord_altaz.alt.degree, 
+            "Alt.": coord_altaz.alt.degree,
             "V": float(item["V"]),
             "N.Obs": int(item["NObs"]),
             "Arc": float(item["Arc"]),
@@ -435,12 +436,24 @@ def twilight_times(payload):
     observer = Observer(name="generic", location=location)
     observing_date = Time(datetime.datetime.utcnow())
     result = {
-        "AstroM": observer.twilight_morning_astronomical(observing_date, which="next").to_value("iso"),
-        "AstroE": observer.twilight_evening_astronomical(observing_date, which="next").to_value("iso"),
-        "CivilM": observer.twilight_morning_civil(observing_date, which="next").to_value("iso"),
-        "CivilE": observer.twilight_evening_civil(observing_date, which="next").to_value("iso"),
-        "NautiM": observer.twilight_morning_nautical(observing_date, which="next").to_value("iso"),
-        "NautiE": observer.twilight_evening_nautical(observing_date, which="next").to_value("iso"),
+        "AstroM": observer.twilight_morning_astronomical(
+            observing_date, which="next"
+        ).to_value("iso"),
+        "AstroE": observer.twilight_evening_astronomical(
+            observing_date, which="next"
+        ).to_value("iso"),
+        "CivilM": observer.twilight_morning_civil(
+            observing_date, which="next"
+        ).to_value("iso"),
+        "CivilE": observer.twilight_evening_civil(
+            observing_date, which="next"
+        ).to_value("iso"),
+        "NautiM": observer.twilight_morning_nautical(
+            observing_date, which="next"
+        ).to_value("iso"),
+        "NautiE": observer.twilight_evening_nautical(
+            observing_date, which="next"
+        ).to_value("iso"),
     }
     print(result)
     return result
@@ -469,14 +482,16 @@ def sun_moon_ephemeris(payload):
     result = {
         "Sunrise": observer.sun_rise_time(observing_date, which="next").to_value("iso"),
         "Sunset": observer.sun_set_time(observing_date, which="next").to_value("iso"),
-        "Moonrise": observer.moon_rise_time(observing_date, which="next").to_value("iso"),
+        "Moonrise": observer.moon_rise_time(observing_date, which="next").to_value(
+            "iso"
+        ),
         "Moonset": observer.moon_set_time(observing_date, which="next").to_value("iso"),
         "MoonIll": observer.moon_illumination(observing_date),
     }
     return result
 
 
-def object_ephemeris(config, object_name, stepping):
+def object_ephemeris(payload):
     """Search Object ephemeris with astroquery
 
     Parameters
@@ -494,26 +509,24 @@ def object_ephemeris(config, object_name, stepping):
         the ephemeris table
 
     """
-    # configuration.load_config(config)
     location = EarthLocation.from_geodetic(
-        float(config["Observatory"]["longitude"]) * u.deg,
-        float(config["Observatory"]["latitude"]) * u.deg,
-        float(config["Observatory"]["altitude"]) * u.m,
+        float(payload.location.longitude) * u.deg,
+        float(payload.location.latitude) * u.deg,
+        float(payload.location.altitude) * u.m,
     )
-    if stepping == "m":
+    if payload.stepping == "m":
         step = 1 * u.minute
-    elif stepping == "h":
+    elif payload.stepping == "h":
         step = "1h"
-    elif stepping == "d":
+    elif payload.stepping == "d":
         step = "1d"
-    elif stepping == "w":
+    elif payload.stepping == "w":
         step = "7d"
     else:
         print(_("Wrong code"))
     eph = MPC.get_ephemeris(
-        str(object_name).upper(), location=location, step=step, number=30
+        str(payload.object_name), location=location, step=step, number=30
     )
-    ephemeris = eph[
-        "Date", "RA", "Dec", "Elongation", "V", "Altitude", "Proper motion", "Direction"
-    ]
-    return ephemeris
+    eph["Date"] = eph["Date"].strftime("%Y-%m-%d %H:%M:%S")
+    # eph["Date"] = eph["Date"].to_datetime()
+    return eph.as_array().tolist()

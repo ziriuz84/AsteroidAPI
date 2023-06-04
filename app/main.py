@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 
 from app.libraries.scheduling import (
     neocp_confirmation,
+    object_ephemeris,
     observing_target_list,
     sun_moon_ephemeris,
     twilight_times,
@@ -9,6 +10,7 @@ from app.libraries.scheduling import (
 )
 from app.models import (
     NeocpConfirmationPayload,
+    ObjectEphemerisPayload,
     ObjectTargetListPayload,
     ObserverCoordinates,
 )
@@ -46,4 +48,10 @@ def get_twilight_times(payload: ObserverCoordinates):
 @app.get("/api/v1/sun_moon")
 def get_sun_moon_eph(payload: ObserverCoordinates):
     response = sun_moon_ephemeris(payload)
+    return {"data": response}
+
+
+@app.get("/api/v1/object_ephemeris")
+def get_object_ephemeris(payload: ObjectEphemerisPayload):
+    response = object_ephemeris(payload)
     return {"data": response}

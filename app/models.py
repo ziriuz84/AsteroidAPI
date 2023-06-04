@@ -8,12 +8,26 @@ class ObjectType(str, Enum):
     comet = "cmt"
     nea = "neo"
 
+
+class Stepping(str, Enum):
+    m = "m"
+    h = "h"
+    d = "d"
+    w = "w"
+
+
+class ObserverCoordinates(BaseModel):
+    latitude: float
+    longitude: float
+    altitude: float = 0
+
+
 class NeocpConfirmationPayload(BaseModel):
-    latitude:float
-    longitude:float
-    min_score: int=0
+    location: ObserverCoordinates
+    min_score: int = 0
     max_magnitude: int
-    height: int=0
+    height: int = 0
+
 
 class ObjectTargetListPayload(BaseModel):
     utf8: str = "%E2%9C%93"
@@ -31,10 +45,11 @@ class ObjectTargetListPayload(BaseModel):
     min_alt: int = 0
     solar_elong: int = 0
     lunar_elong: int = 0
-    object_type: ObjectType 
+    object_type: ObjectType
     submit: str = "Submit"
 
-class ObserverCoordinates(BaseModel):
-  latitude: float
-  longitude: float
-  altitude: float = 0
+
+class ObjectEphemerisPayload(BaseModel):
+    location: ObserverCoordinates
+    object_name: str
+    stepping: Stepping
