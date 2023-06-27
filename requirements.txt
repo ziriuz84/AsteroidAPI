@@ -7,3 +7,4 @@ astroplan
 astropy
 bs4
 astroquery
+lxml
